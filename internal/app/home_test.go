@@ -110,6 +110,33 @@ func TestSeeAllOpensBrowsePage(t *testing.T) {
 	}
 }
 
+// A page opened again a while after it loaded is asked for anew, showing what
+// it had meanwhile: a plugin's page of songs played lately stayed as it first
+// was until the app restarted.
+func TestBrowsePageFreshensWhenOpenedLater(t *testing.T) {
+	a, ch, asked := browseApp()
+	fake(a).info.Navigation = []music.NavItem{{Title: "Recent", Page: "recent"}, {Builtin: "home"}}
+	tt := ui.NewTester(a.view, 1200, 800)
+	tt.Frame()
+	if err := tt.Click("Recent"); err != nil {
+		t.Fatal(err)
+	}
+	wait(t, asked, "the page")
+	runPost(t, ch)
+	if err := tt.Click("Home"); err != nil {
+		t.Fatal(err)
+	}
+	a.library.browses["recent"].at = time.Now().Add(-listsFresh - time.Second)
+	if err := tt.Click("Recent"); err != nil {
+		t.Fatal(err)
+	}
+	wait(t, asked, "the page again")
+	tt.Frame()
+	if _, ok := tt.Find("Page recent"); !ok {
+		t.Errorf("while loading anew it shows %q", tt.Texts())
+	}
+}
+
 // A section's Link opens the page it names, on a page that a link led to too,
 // and a track listed on such a page plays from there.
 func TestLinkOpensBrowsePage(t *testing.T) {

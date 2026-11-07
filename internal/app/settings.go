@@ -71,6 +71,9 @@ type settings struct {
 	// rising and swelling with the bass: an experiment the listener turns
 	// on.
 	Fog bool `json:"fog"`
+	// DesktopLyrics shows the current lyric line in a floating desktop
+	// overlay.
+	DesktopLyrics bool `json:"desktopLyrics"`
 	// AppIcon is where the app's icon shows on macOS (appIcons); elsewhere
 	// it is always in the notification area.
 	AppIcon string `json:"appIcon"`

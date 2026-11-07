@@ -52,12 +52,13 @@ type route struct {
 // app is the state both windows show. Everything in it is read and changed
 // on the main thread: by the views, and by goroutines through post.
 type app struct {
-	win   *mygo.Window
-	notch *notch
-	tray  *mygo.Tray // the icon in the menu bar or notification area, while it shows
-	art   *artCache
-	pl    *player.Player
-	pal   palette
+	win           *mygo.Window
+	notch         *notch
+	desktopLyrics *desktopLyrics
+	tray          *mygo.Tray // the icon in the menu bar or notification area, while it shows
+	art           *artCache
+	pl            *player.Player
+	pal           palette
 
 	// libs are the sources, the built-in one first, and what the app has of
 	// each. The active one's is embedded: a.mine is what the active source
@@ -191,6 +192,9 @@ func (a *app) redraw() {
 	}
 	if a.notch != nil && a.notch.win != nil {
 		a.notch.win.Invalidate()
+	}
+	if a.desktopLyrics != nil {
+		a.desktopLyrics.sync()
 	}
 	if a.settingsWin != nil {
 		a.settingsWin.Invalidate()
@@ -339,6 +343,7 @@ func Run() error {
 		a.pl.Changed = func() {
 			a.keepSession()
 			a.syncCaptions()
+			mygo.RunOnMain(a.syncDesktopLyrics)
 		}
 		a.volume = a.settings.Volume
 		a.pl.SetVolume(a.volume)
@@ -366,6 +371,7 @@ func Run() error {
 		if runtime.GOOS == "darwin" {
 			a.notch = newNotch(a)
 		}
+		a.desktopLyrics = newDesktopLyrics(a)
 		// From the menu bar alone, the Dock icon shows while the window
 		// does.
 		a.syncDock()
@@ -428,4 +434,10 @@ func Run() error {
 		a.openLink(link)
 	})
 	return mygo.App.Run()
+}
+
+func (a *app) syncDesktopLyrics() {
+	if a.desktopLyrics != nil {
+		a.desktopLyrics.sync()
+	}
 }

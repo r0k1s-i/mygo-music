@@ -420,6 +420,11 @@ func (a *app) settingsSections(c *ui.Context, p palette) []settingsSection {
 				}
 			})
 		}
+		row(T("Desktop Lyrics"), T("Show the current lyric line floating above other windows"), func() {
+			if ui.Switch(c.Key("desktop-lyrics"), &s.DesktopLyrics).Label(T("Desktop Lyrics")).Changed() {
+				a.changed()
+			}
+		})
 		row(T("Even Out Loudness"), T("Adjust each song's volume by what its plugin measured of it, for them to sound as loud as each other"), func() {
 			if ui.Switch(c.Key("normalize"), &s.Normalize).Label(T("Even Out Loudness")).Changed() {
 				a.pl.SetVolume(a.volume)
